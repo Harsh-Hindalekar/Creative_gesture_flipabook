@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { getProfile } from "../utils/api";
 import { useNavigate } from "react-router-dom";
+import { getProfile } from "../utils/api";
 
 export default function Profile() {
   const [user, setUser] = useState(null);
@@ -10,28 +10,41 @@ export default function Profile() {
     async function fetchProfile() {
       const token = localStorage.getItem("token");
       if (!token) {
-        navigate("/");
+        navigate("/"); // Redirect to login if no token
         return;
       }
+
       const res = await getProfile(token);
-      setUser(res);
+      if (res.id) {
+        setUser(res);
+      } else {
+        localStorage.removeItem("token");
+        navigate("/"); // If token invalid → back to login
+      }
     }
+
     fetchProfile();
-  }, []);
-
-  function handleLogout() {
-    localStorage.removeItem("token");
-    navigate("/");
-  }
-
-  if (!user) return <p>Loading...</p>;
+  }, [navigate]);
 
   return (
-    <div>
+    <div style={{ padding: "2rem" }}>
       <h2>Profile</h2>
-      <p>Name: {user.name}</p>
-      <p>Email: {user.email}</p>
-      <button onClick={handleLogout}>Logout</button>
+      {user ? (
+        <>
+          <p><b>Name:</b> {user.name || "N/A"}</p>
+          <p><b>Email:</b> {user.email}</p>
+          <button
+            onClick={() => {
+              localStorage.removeItem("token");
+              navigate("/");
+            }}
+          >
+            Logout
+          </button>
+        </>
+      ) : (
+        <p>Loading profile...</p>
+      )}
     </div>
   );
 }

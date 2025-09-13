@@ -1,37 +1,67 @@
-const API_BASE = "http://localhost:5000/api"; // Flask backend URL
-
-// Helper for requests
-async function request(url, method = "GET", body = null, token = null) {
-  const headers = { "Content-Type": "application/json" };
-  if (token) headers["Authorization"] = `Bearer ${token}`;
-
-  const res = await fetch(`${API_BASE}${url}`, {
-    method,
-    headers,
-    body: body ? JSON.stringify(body) : null,
-  });
-
-  return res.json();
-}
+const API_URL = "http://localhost:5000/api";
 
 // ---- Auth ----
-export async function loginUser(email, password) {
-  return request("/auth/login", "POST", { email, password });
-}
-
 export async function registerUser(name, email, password) {
-  return request("/auth/register", "POST", { name, email, password });
+  try {
+    const res = await fetch(`${API_URL}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password }),
+    });
+    return await res.json();
+  } catch (err) {
+    return { msg: "Error connecting to server" };
+  }
 }
 
-export async function getProfile(token) {
-  return request("/user/profile", "GET", null, token);
+export async function loginUser(email, password) {
+  try {
+    const res = await fetch(`${API_URL}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    return await res.json();
+  } catch (err) {
+    return { msg: "Error connecting to server" };
+  }
 }
 
-// ---- AI Placeholder APIs ----
+export async function fetchProfile() {
+  try {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API_URL}/user/profile`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return await res.json();
+  } catch (err) {
+    return { msg: "Error connecting to server" };
+  }
+}
+
+// ---- AI Endpoints ----
 export async function recognizeShape(points) {
-  return request("/recognize", "POST", { points });
+  try {
+    const res = await fetch("http://localhost:5000/api/recognize", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ points }),
+    });
+    return await res.json();
+  } catch (err) {
+    return { msg: "Error connecting to server" };
+  }
 }
 
 export async function smoothStroke(points) {
-  return request("/smooth_stroke", "POST", { points });
+  try {
+    const res = await fetch("http://localhost:5000/api/smooth_stroke", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ points }),
+    });
+    return await res.json();
+  } catch (err) {
+    return { msg: "Error connecting to server" };
+  }
 }

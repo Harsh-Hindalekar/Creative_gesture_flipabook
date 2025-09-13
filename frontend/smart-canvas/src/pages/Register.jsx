@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { registerUser } from "../utils/api";
 import { useNavigate, Link } from "react-router-dom";
 
@@ -8,39 +8,43 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
+  // 🚀 Redirect if already logged in
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      navigate("/dashboard");
+    }
+  }, [navigate]);
+
   async function handleSubmit(e) {
     e.preventDefault();
-    try {
-      const res = await registerUser(name, email, password);
-      if (res.access_token) {
-        localStorage.setItem("token", res.access_token);
-        navigate("/dashboard");
-      } else {
-        alert(res.msg || "Registration failed");
-      }
-    } catch (err) {
-      alert("Server error: " + err.message);
+    const res = await registerUser(name, email, password);
+    if (res.access_token) {
+      localStorage.setItem("token", res.access_token);
+      navigate("/dashboard");
+    } else {
+      alert(res.msg || "Registration failed");
     }
   }
 
   return (
-    <div>
+    <div style={{ padding: "2rem" }}>
       <h2>Register</h2>
       <form onSubmit={handleSubmit}>
         <input
-          type="text"
           placeholder="Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
         />
+        <br />
         <input
-          type="email"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
         />
+        <br />
         <input
           type="password"
           placeholder="Password"
@@ -48,6 +52,7 @@ export default function Register() {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
+        <br />
         <button type="submit">Register</button>
       </form>
       <p>
